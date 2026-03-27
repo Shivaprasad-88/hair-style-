@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user information and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique ID of the user." },
+        "displayName": { "type": "string", "description": "The display name of the user." },
+        "email": { "type": "string", "description": "The email address of the user." },
+        "photoURL": { "type": "string", "description": "The profile photo URL of the user." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the profile was created." }
+      },
+      "required": ["uid", "email"]
+    },
+    "HairstyleGeneration": {
+      "title": "Hairstyle Generation",
+      "description": "Stores details about a hairstyle generation request and result.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID for the generation." },
+        "userId": { "type": "string", "description": "The ID of the user who requested it." },
+        "originalImageUrl": { "type": "string", "description": "URL of the original uploaded face image (base64 or storage)." },
+        "generatedImageUrl": { "type": "string", "description": "URL of the generated hairstyle image (base64)." },
+        "prompt": { "type": "string", "description": "The prompt used for generation." },
+        "barberTalk": { "type": "string", "description": "Instructions for the barber in Tanglish." },
+        "shirtRecommendation": { "type": "string", "description": "Recommended shirt style and color." },
+        "pantRecommendation": { "type": "string", "description": "Recommended pant style and color." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When it was generated." },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "When this should be considered deleted (1 hour after creation)." }
+      },
+      "required": ["id", "userId", "originalImageUrl", "generatedImageUrl", "createdAt", "expiresAt", "barberTalk", "shirtRecommendation", "pantRecommendation"]
+    },
+    "SavedPreference": {
+      "title": "Saved Preference",
+      "description": "Stores a user's saved hairstyle preference and custom prompt.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID for the saved preference." },
+        "userId": { "type": "string", "description": "The ID of the user who saved it." },
+        "name": { "type": "string", "description": "A name for this saved preference." },
+        "styleName": { "type": "string", "description": "The name of the hairstyle." },
+        "customPrompt": { "type": "string", "description": "The custom prompt text." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When it was saved." }
+      },
+      "required": ["id", "userId", "name", "styleName", "createdAt"]
+    },
+    "GrowthLog": {
+      "title": "Growth Log",
+      "description": "Stores a photo and notes for tracking hair/beard growth.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID for the log entry." },
+        "userId": { "type": "string", "description": "The ID of the user." },
+        "imageUrl": { "type": "string", "description": "URL of the growth photo." },
+        "notes": { "type": "string", "description": "Optional notes about the growth." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the log was created." }
+      },
+      "required": ["id", "userId", "imageUrl", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of user profiles."
+    },
+    "/generations/{generationId}": {
+      "schema": "HairstyleGeneration",
+      "description": "Collection of hairstyle generations."
+    },
+    "/users/{userId}/preferences/{preferenceId}": {
+      "schema": "SavedPreference",
+      "description": "Subcollection of a user's saved preferences."
+    },
+    "/users/{userId}/growth_logs/{logId}": {
+      "schema": "GrowthLog",
+      "description": "Subcollection of a user's hair growth logs."
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Hair Style AI",
+  "description": "Upload your photo to try on new hairstyles with 100% face matching using Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

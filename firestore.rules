@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "kranthi95259@gmail.com" && request.auth.token.email_verified == true) ||
+          (request.auth.token.email == "dkranthi102@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string;
+    }
+
+    function isValidGeneration(data) {
+      return data.keys().hasAll(['userId', 'originalImageUrl', 'generatedImageUrl', 'prompt', 'barberTalk', 'createdAt', 'expiresAt', 'shirtRecommendation', 'pantRecommendation']) &&
+             data.userId == request.auth.uid &&
+             data.originalImageUrl is string &&
+             data.generatedImageUrl is string &&
+             data.prompt is string &&
+             data.barberTalk is string &&
+             data.shirtRecommendation is string &&
+             data.pantRecommendation is string &&
+             data.createdAt is string &&
+             data.expiresAt is string;
+    }
+
+    function isValidPreference(data) {
+      return data.keys().hasAll(['id', 'userId', 'name', 'styleName', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 50 &&
+             data.styleName is string &&
+             data.createdAt is string;
+    }
+
+    function isValidGrowthLog(data) {
+      return data.keys().hasAll(['id', 'userId', 'imageUrl', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.imageUrl is string &&
+             data.createdAt is string;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    match /users/{userId}/preferences/{preferenceId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) && isValidPreference(request.resource.data);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    match /users/{userId}/growth_logs/{logId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidGrowthLog(request.resource.data);
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    match /generations/{generationId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidGeneration(request.resource.data);
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /test/connection {
+      allow read: if isAuthenticated();
+    }
+  }
+}
